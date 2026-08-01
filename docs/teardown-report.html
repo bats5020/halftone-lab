@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ハーフトーン系ツール 分解リサーチレポート</title>
+<style>
+  :root{
+    --bg:#0a0a0b; --panel:#141417; --panel2:#1c1c21; --line:#2a2a31;
+    --ink:#f2f2f4; --sub:#9a9aa6; --acc:#ffd166; --ok:#5ee0a8; --warn:#ff8fa3; --blue:#7cc7ff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+    line-height:1.7;font-size:14.5px}
+  .wrap{max-width:1080px;margin:0 auto;padding:52px 26px 100px}
+  .eyebrow{letter-spacing:.28em;font-size:11px;color:var(--sub);text-transform:uppercase;margin:0 0 12px}
+  h1{font-size:clamp(26px,4vw,40px);line-height:1.2;margin:0 0 14px;font-weight:800}
+  h1 em{color:var(--acc);font-style:normal}
+  .lead{color:var(--sub);max-width:760px}
+  h2{font-size:19px;margin:56px 0 6px;padding-top:22px;border-top:1px solid var(--line);letter-spacing:.01em}
+  h2 .num{color:var(--acc);font-family:ui-monospace,monospace;margin-right:8px;font-size:15px}
+  h3{font-size:15px;margin:26px 0 8px}
+  p{margin:10px 0}
+  .sub{color:var(--sub)}
+  table{border-collapse:collapse;width:100%;margin:14px 0;font-size:13px}
+  th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+  th{background:var(--panel2);font-size:12px;color:var(--sub);font-weight:600;white-space:nowrap}
+  td{background:var(--panel)}
+  code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  code{background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:12.5px}
+  pre{background:#0e0e11;border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto;font-size:12.5px;line-height:1.6}
+  pre code{background:none;border:none;padding:0}
+  .good{color:var(--ok)} .bad{color:var(--warn)} .hi{color:var(--acc)}
+  details{background:var(--panel);border:1px solid var(--line);border-radius:12px;margin:10px 0;padding:0}
+  summary{cursor:pointer;padding:13px 16px;font-weight:700;font-size:14px;list-style:none;display:flex;align-items:center;gap:10px}
+  summary::before{content:"▸";color:var(--acc);transition:.15s}
+  details[open] summary::before{transform:rotate(90deg)}
+  summary .host{color:var(--sub);font-weight:400;font-size:12px;margin-left:auto}
+  details .inner{padding:2px 18px 16px;border-top:1px solid var(--line)}
+  ul{margin:8px 0;padding-left:20px}
+  li{margin:5px 0}
+  .verdict{background:linear-gradient(135deg,#191305,#141417);border:1px solid #3d3417;border-radius:12px;padding:16px 20px;margin:18px 0}
+  .verdict b{color:var(--acc)}
+  .pill{display:inline-block;font-size:10.5px;border:1px solid var(--line);border-radius:999px;padding:1px 9px;color:var(--sub);margin-right:5px}
+  .p0{color:#0a0a0b;background:var(--warn);border-color:var(--warn);font-weight:700}
+  .p1{color:#0a0a0b;background:var(--acc);border-color:var(--acc);font-weight:700}
+  .p2{color:#0a0a0b;background:var(--blue);border-color:var(--blue);font-weight:700}
+  footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);color:var(--sub);font-size:12px}
+  a{color:var(--blue);text-decoration:none} a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="eyebrow">Deep Teardown Report</p>
+<h1>ハーフトーン系ツール<br><em>分解リサーチ</em>レポート</h1>
+<p class="lead">競合9ツールをライブアプリのDOM検証・JSバンドルの逆解析・OSSソースコード精読・技術記事の深掘りで分解。「完成度が高い」を構成している要素をコードレベルまで特定し、HALFTONE LAB v1 とのギャップと v2 仕様に落とし込んだ。2026-07-30 実施。</p>
+
+<h2><span class="num">00</span>結論：完成度は「7つの細部」でできている</h2>
+<div class="verdict">
+<b>① 数学が正しい</b>（ドット半径は輝度の<b>平方根</b>、サンプリングは<b>セル中心</b>）／<b>② アルゴリズムの深さ</b>（上位ツールは誤差拡散だけで12〜16種、serpentine走査は標準ON）／<b>③ パレットシステム</b>（Game Boy・PICO-8等のプリセット＋カスタム）／<b>④ 比較UX</b>（ドラッグ分割ビュー・ズーム/パン・変更点の即時反映）／<b>⑤ 書き出しの本気度</b>（SVGベクター・元解像度NN拡大・書き出し前のファイルサイズ表示）／<b>⑥ 状態の可搬性</b>（設定をURL/トークンで共有・プリセット保存）／<b>⑦ 遊びの導線</b>（ランダマイズ・プリセットパック・サンプル画像内蔵）。<br>
+v1 はこの7つのうち<b class="bad">ほぼ全てが未達</b>。特に①（線形ドットサイズ）は出力画質に直結する数学的誤りで、最優先で直すべき。
+</div>
+
+<h2><span class="num">01</span>競合マトリクス（9ツール）</h2>
+<table>
+<tr><th>ツール</th><th>誤差拡散</th><th>Ordered</th><th>ハーフトーン</th><th>動画</th><th>SVG</th><th>技術</th><th>課金</th></tr>
+<tr><td><b>Dithering Studio</b><br><span class="sub">30アルゴリズム</span></td><td>16種（FS/Atkinson/JJN/Stucki/Burkes/Sierra×4/Stevenson-Arce/Ostromoukhov/Adaptive FS/カスタムカーネル/Riemersma）＋強度0–150%＋serpentine既定ON</td><td>Bayer 2/4/8/16/32 + Blue Noise 64×64</td><td>1種（簡易）</td><td>◎ MP4/WebM/GIF</td><td>◎ RLE統合</td><td>React+Worker+OffscreenCanvas</td><td>完全無料</td></tr>
+<tr><td><b>Dither it!</b><br><span class="sub">OSS (Nuxt4/MIT)</span></td><td>12種＋serpentine</td><td>Bayer 2/4/8/16 + Blue Noise + Riemersma</td><td>—</td><td>GIFアニメのみ</td><td>◎</td><td>Nuxt4/Vue3、<span class="hi">OKLab色空間オプション</span></td><td>無料</td></tr>
+<tr><td><b>Ditther</b><br><span class="sub">12エフェクト</span></td><td>FS/Atkinson のみ</td><td>Bayer 4/8</td><td>2種（Halftone/Dots）＋LEGO/Voxel/Cross-Stitch等</td><td>◎ MP4 60fps(Pro)</td><td>—</td><td>Vanilla JS+WebGL、4層canvas</td><td>$12/月・LT $65</td></tr>
+<tr><td><b>halftonemaker.com</b><br><span class="sub">最重量級</span></td><td>FS/Atkinson/JJN/Stucki/<span class="hi">Riemersma</span></td><td>Bayer 2/4/8/16</td><td>◎ グリッド6種（方形/六角/放射/線/環/点描）×形状10種＋メタボール</td><td>—</td><td>◎ 精度指定/形状統合</td><td>Worker+<span class="hi">WASM</span>+PWA</td><td>サブスク+スポット</td></tr>
+<tr><td><b>halftone-fx.com</b></td><td>FS/JJN/Stucki/Burkes</td><td>Bayer＋ノイズ</td><td>◎ 本命機能</td><td>◎ WebM</td><td>◎</td><td>Canvas+WebGL</td><td>無料(広告)</td></tr>
+<tr><td><b>STUDIO·ITY</b><br><span class="sub">11ツール群</span></td><td>（別ツールでFS/Atkinson/Bayer）</td><td>—</td><td>◎ 5パターン（円/線/菱形/クロスハッチ/方形）</td><td>◎ <span class="hi">FFmpeg.wasm</span>でHEVC対応</td><td>Pro</td><td>Canvas 2D</td><td>€9 買い切り</td></tr>
+<tr><td><b>Vector Halftone Maker</b><br><span class="sub">xoihazard・逆解析済</span></td><td>—</td><td>—</td><td>◎ 六角/方形/放射グリッド＋<span class="hi">スワール</span>＋ノイズ変位</td><td>—</td><td>◎</td><td>Canvas 2D、時分割描画</td><td>無料</td></tr>
+<tr><td><b>Shpigford/dither</b><br><span class="sub">OSS (MIT)・精読済</span></td><td>—（ordered専用設計）</td><td>Bayer 2/4/8＋手続きパターン5種</td><td>scaled モード</td><td>—</td><td>◎ 色別&lt;g&gt;グループ</td><td>Vanilla+esbuild</td><td>無料</td></tr>
+<tr><td><b>Efecto</b><br><span class="sub">efecto.app・記事精読</span></td><td>8種（CPU/JS実行）</td><td>Bayer</td><td>◎ シェーダ</td><td>◎ 録画</td><td>—</td><td><span class="hi">CPUディザ＋WebGPUブルーム</span>のハイブリッド、R3F+postprocessing</td><td>freemium</td></tr>
+</table>
+
+<h2><span class="num">02</span>ツール別ティアダウン（詳細）</h2>
+
+<details open>
+<summary>Dithering Studio — アルゴリズムの教科書 <span class="host">ditheringstudio.com・OSS (Apache-2.0)</span></summary>
+<div class="inner">
+<p>ソースは <a href="https://github.com/Oslonline/dithering-studio">Oslonline/dithering-studio</a>（React 19 + Vite、TS 98%）。<b>steinberg-image.vercel.app はここへ統合</b>されていた。</p>
+<ul>
+<li><b>パラメータ実測値（DOMから取得）：</b>Luminance Threshold 0–255（既定128）／Error Strength 0–150%・step5（既定100%、「0%=拡散なし、150%=誇張」）／Serpentine 既定<b>ON</b>／Scale（内部解像度）5–100%／Contrast −100..100／Midtones(Gamma) 0.50–2.00／Highlights Compression 0–100／Blur 0–10px（ordered前のノイズ低減用と明記）</li>
+<li><b>カスタムカーネルエディタ：</b>行×列・除数・重み行列をユーザーが直接編集できる（既定 3×3, /16, [0 0 7 / 3 5 1]）</li>
+<li><b>ASCII Mosaic：</b>ランプ文字列編集＋「Auto Order」＝<b>グリフのインク密度で自動ソート</b>（暗→明）、Reverse／Ensure Space ボタン付き</li>
+<li><b>パレット22種：</b>Game Boy(4)/NES/PICO-8(16)/DawnBringer16・32/CGA/EGA/Solarized/C64/ZX Spectrum/Apple II/Synthwave/Vaporwave/Bauhaus…＋カスタム（ドラッグ並べ替え）＋画像から自動抽出</li>
+<li><b>書き出し：</b>PNG/JPEG/WEBP/SVG/クリップボード、各ボタンに<b>事前計算したファイルサイズを表示</b>（例 PNG 242.4KB / SVG 1.1MB）。SVGは同色の水平連続画素を1つの&lt;rect&gt;に統合（RLE）、20万要素超で警告</li>
+<li><b>実装の要：</b>「プレビュー解像度でディザ→<b>最近傍補間で元解像度に拡大</b>して書き出し」— 再ディザせずプレビューと完全一致のドット感を保つ。動画はrAF＋fpsスロットル(既定12fps)でフレーム毎にCPUディザ、captureStream+MediaRecorder（MP4→WebM亥フォールバック）、GIFは gifenc</li>
+<li><b>UX：</b>設定をURLに直列化して共有／プリセットをトークン文字列でエクスポート・インポート／🎲ランダマイズ／前後比較／ズーム・パン・フィット／per-frame処理時間HUD（Perf ▲4.2ms）／キーボードショートカット（F=focus, G=grid）／7言語i18n。<b>Workerプールを実装した上で無効化</b>（512px作業解像度ではコピーコストが上回ると判断した形跡）</li>
+</ul>
+</div>
+</details>
+
+<details>
+<summary>Vector Halftone Maker — グリッド数学の宝庫 <span class="host">halftone.xoihazard.com・バンドル逆解析</span></summary>
+<div class="inner">
+<ul>
+<li><b>グリッドは全て中心からの同心リング構造</b>で生成し、各点に <code>magnitude = 1 − ringIndex/ringCount</code>（中心=1→端=0）を持たせる。回転角に <code>gridAngle + magnitude × swirl×2π</code> を加算 → 中心ほど強く捻れる<b>スパイラル変形</b>があの独特のルックの正体</li>
+<li><b>六角格子：</b>軸座標(q,r)、投影 x=n√3(q+r/2), y=n(3/2)r。<b>放射：</b>奇数リングを π 位相シフトして千鳥配置</li>
+<li><b>サンプリングパイプライン</b>（適用順が重要）：チャンネル抽出（R/G/B/A/輝度/C/M/Y/K の9種）→ クランプ(.05–.95)→ ガンマ → 反転 → <b>のこぎり波</b>(×1–10, mod 1) → <b>三角波</b>(×1–20, 折返し) → ポスタライズ(1–256) → クリップ範囲外は<b>ドット自体を間引く</b> → 半径 = (1−(1−c)×strength)×space/2</li>
+<li><b>ノイズ変位：</b>simplex noiseの角度場に沿って10回反復アドベクション（フローフィールド）— 単発オフセットより有機的な歪みになる</li>
+<li><b>decomposeモード：</b>1つのグリッドを3つのサブ格子（六角なら (q−r) mod 3）に分け、各々別チャンネル・別色でサンプリング → 1枚でRGB/CMY分版ハーフトーン</li>
+<li><b>描画：</b>Workerなし。ポイント描画ループを<b>50ms毎に時分割してrAFで継続</b>（数万ドットでもUIが固まらない）。SVGは createElementNS + XMLSerializer で1ドット=1要素</li>
+<li><b>既定値（バンドルから抽出）：</b>canvasSize 1000／blur 5／gridSpace 15（3–100）／swirl 0／depth 256／shapeScale 1（.1–9）…（レポート元データに全パラメータ表あり）</li>
+</ul>
+</div>
+</details>
+
+<details>
+<summary>halftonemaker.com — 機能深度の最高峰 <span class="host">changelog 4ページ分を解析</span></summary>
+<div class="inner">
+<ul>
+<li><b>グリッド6種</b>（方形/六角/放射/線/環/点描）×<b>ドット形状10種＋</b>（円/方/三角/六角/六芒星/内接円×2/文字・絵文字/スーパー楕円/カスタムSVG）。スーパー楕円は指数スライダーで菱形⇄円⇄角丸四角をモーフィング</li>
+<li><b>点描（stippling）：</b>散布＋Lloyd緩和（WASM）＋衝突半径＋「トーンでなくディテールで打点」するDetail Rangeスライダー</li>
+<li><b>Blobスタイル：</b>メタボール結合（Merge Strength / Min Neck Width / Max Necks）</li>
+<li><b>密度ベースサイズ：</b>Voronoi / Local Density の2方式</li>
+<li><b>量子化パネル：</b>Bayer 2/4/8/16 + FS + <b>Quantization Mix</b>（ディザと元階調のブレンド率）</li>
+<li><b>Sampling/Displacementパネル：</b>波（Shift/三角波/のこぎり波＋位相）、ノイズ（量/シード/周波数）、2Dノイズワープ</li>
+<li><b>UX発明：</b>Simple/Advanced/Expert の3段階UI／<b>既定値から変更したパラメータをハイライト</b>／Live Settings JSONエディタ（リアルタイム双方向）／Precision Slider（狭域→全域に展開）／プレビューと書き出しのスーパーサンプル一致／レンダーステージ別のPipeline Timingオーバーレイ</li>
+<li><b>技術：</b>レンダリングは背景Worker＋WASM（ガウスぼかし/線描画/点描散布/SVG統合）。PWA。プリセットはサムネイル付き・クラウド同期・期限付き共有トークン</li>
+<li><b>書き出し：</b>PNG（Pro上限4000px）／SVG（小数精度2/4/6桁選択・Bézier曲線・実験的形状統合）／<b>JSON（ドット座標の生データ）</b>／バッチZIP</li>
+</ul>
+</div>
+</details>
+
+<details>
+<summary>Ditther — 「遊ばせるUX」と収益化の教材 <span class="host">app.ditther.com v1.4・DOM実測</span></summary>
+<div class="inner">
+<ul>
+<li><b>12エフェクト</b>（Pixel Art/Dither/ASCII/Halftone/Dots/LEGO/Cross-Stitch/Voxel/Lattice/LED/Hex Grid/Blob Tracker）を<b>アニメーションするサムネイル</b>のビジュアルピッカーで選択</li>
+<li><b>共通パラメータ：</b>Size 50/Fill 100%/Density 8/Exposure 110%/Scatter 0%/Opacity/ブレンドモード5種</li>
+<li><b>ASCIIの文字セット11種：</b>Classic/Numeric/Hacker/Signal/Symbols(Σ∆×○◇✦)/Alpha/Blocky/Thin/Japanese(アイウエオカキ)/Brutal ＋フォント3種（VT323/8bit/Tech Mono）</li>
+<li><b>グローバルパイプライン：</b>フィルタプリセット7種（Cinematic/Noir/Neon…）＋ ADJUSTMENTS（明度/コントラスト/彩度/色相/グレスケ/セピア/反転）＋ TEXTURE（Noise/Grain）＋ LENS（Blur/Glow）＋ VIGNETTE ＋ GRADE（Posterize/Infrared/Thermal）＋ Edge Trace ＋ FILM系トグル10種（Scanlines/VHS/Light Leak/Motion Trails…）</li>
+<li><b>Duotoneモジュール：</b>インク＋ペーパー2色、スワップ、キュレート済みペア14種、画像からスポイト、HSBスライダー、最近使った色</li>
+<li><b>アニメーション：</b>モーションプリセット10種（Breathe/Drift/Echo/Sweep/Flow/Pour/Storm/Heartbeat/Tide/Matrix）×イージング7種×Pace/Intensity/Phase Lag/Char Shift。エフェクト毎に専用挙動（LEGOは組み上がる、Bayerはパターンが流れる）</li>
+<li><b>Looks：</b>45+のプリセット（エフェクト+フィルタ+色の複合）と、<b>30の「ムードプール」から引くRemixボタン</b>（完全ランダムでなくキュレート済みの組合せ）</li>
+<li><b>収益化：</b>透かし＋解像度でフリー/Pro分離。$12/月・LT $65。Believers wall（初期支援者50名を国旗付きで掲示）等のコミュニティ装置</li>
+</ul>
+</div>
+</details>
+
+<details>
+<summary>Dither it! / Shpigford/dither / Efecto ほか <span class="host">OSS精読＋記事</span></summary>
+<div class="inner">
+<ul>
+<li><b>Dither it!（alexharris/ditherit-v3, Nuxt4）：</b>誤差拡散12種＋<b>OKLab色空間オプション</b>（「誤差拡散とRiemersmaに適用、色相忠実度が向上」）。パレット16プリセット（Game Boy DMG-01含む）＋localStorage保存＋JSON import/export。<b>ファイルサイズ削減ドーナツグラフ</b>（元/後/削減率%）と、ダウンロードメニューでの<b>フォーマット別サイズ事前表示</b>。マルチ画像ギャラリー＋一括ZIP。Auto-dither ON/OFF（重い時は手動適用に切替可）</li>
+<li><b>Shpigford/dither（精読）：</b>誤差拡散を持たない「ordered専用のベクターディザ」設計。パレットは各色が輝度範囲の<b>%帯域を持つバンド量子化</b>（最近色ではない）。SVGは背景色セルをスキップ→色毎に&lt;g fill&gt;グループ→座標2桁丸め、が最もクリーンな書き出しパターン。手続きパターン（lines/crosses/grid/scales）は正規化セル座標上の距離場として実装</li>
+<li><b>Efecto（efecto.app）：</b>誤差拡散は<b>CPU/JSで実行</b>（「逐次依存だからシェーダにできない」と明言）、WebGPUはテクスチャ管理とブルームのみ、Canvas 2Dフォールバック。ASCIIは<b>フォント不使用、5×7グリッドの数学関数としてグリフを手続き生成</b>。CRTスタック（スキャンライン/曲率 <code>uv*2-1; d=dot(c,c); c*=1+k*d</code>/色収差/ビネット）。パレット31種。<b>Export code</b>ボタン＝生成物をコードとして書き出す差別化。状態はURLクエリに直列化</li>
+</ul>
+</div>
+</details>
+
+<h2><span class="num">03</span>実装のコア知見（コードレベル）</h2>
+
+<h3>3-1. ドットサイズの正しい数式（v1の最大の誤り）</h3>
+<pre><code>// ✗ v1（線形）— インク面積が輝度に比例せず中間調が浅くなる
+r = (1 - L) * cell * 0.72
+
+// ✓ 正解（面積補正）— 被覆面積 ∝ r² なので平方根を取る
+//   Stegu・Maxime Heckel 両者が同式。全競合の中で品質差が最も出る一行
+r = cell * 0.5 * sqrt(1 - L)     // または r = maxR * sqrt(coverage)</code></pre>
+<p>さらに <b>サンプリングは「回転後セルの中心」で行う</b>こと（Heckel）。ピクセル毎に読むと色境界でドットが変形する：</p>
+<pre><code>gridUV   = rot(θ) * (uv * res) / cellSize
+center   = floor(gridUV) + 0.5
+sampleUV = rot(-θ) * center * cellSize / res   // 逆回転で戻してから読む</code></pre>
+
+<h3>3-2. 誤差拡散カーネル一覧（実装可能な形で）</h3>
+<table>
+<tr><th>アルゴリズム</th><th>カーネル（現在画素の右と下段）</th><th>除数</th><th>特徴</th></tr>
+<tr><td>Floyd–Steinberg</td><td>右7 ／ 左下3・下5・右下1</td><td>16</td><td>高速でバランス型の既定</td></tr>
+<tr><td>False FS</td><td>右3 ／ 下3・右下2</td><td>8</td><td>軽量・アーティファクト多め</td></tr>
+<tr><td>Atkinson</td><td>右1・右々1 ／ 左下1・下1・右下1 ／ 下々1</td><td>8</td><td><b>誤差の6/8しか拡散しない</b>→ハイコントラストで「カリッ」とした質感（Mac Classic）</td></tr>
+<tr><td>Jarvis–Judice–Ninke</td><td>[0 0 0 7 5 / 3 5 7 5 3 / 1 3 5 3 1]</td><td>48</td><td>3行拡散・最も滑らか・最も重い</td></tr>
+<tr><td>Stucki</td><td>[0 0 0 8 4 / 2 4 8 4 2 / 1 2 4 2 1]</td><td>42</td><td>JJN系でシャープ寄り</td></tr>
+<tr><td>Burkes</td><td>[0 0 0 8 4 / 2 4 8 4 2]</td><td>32</td><td>Stucki の2行版・パンチのある出力</td></tr>
+<tr><td>Sierra / Two-Row / Lite</td><td>[…5 3 / 2 4 5 4 2 / 0 2 3 2 0]・[…4 3 / 1 2 3 2 1]・[…2 / 1 1 0]</td><td>32/16/4</td><td>品質と速度の段階選択</td></tr>
+<tr><td>Stevenson–Arce</td><td>11列×3行の疎カーネル</td><td>200</td><td>六角格子想定の広域拡散</td></tr>
+<tr><td>Ostromoukhov</td><td>輝度バケット毎に可変係数（bucket=floor(v/51)）</td><td>可変</td><td>階調依存の最適化</td></tr>
+<tr><td>Riemersma</td><td>ヒルベルト曲線走査＋16エントリ循環バッファ・指数重み [1/16,1/8,1/4,1/2]</td><td>—</td><td>方向性アーティファクトが出ない・希少で差別化になる</td></tr>
+</table>
+<ul>
+<li><b>Serpentine走査</b>（奇数行を右→左、カーネルdxを鏡像反転）は Dithering Studio で既定ON。蛇行させないと縦筋が出る</li>
+<li><b>Error Strength</b>（0–150%）：拡散する誤差に係数を掛けるだけで表現の幅が大きく広がる（Dithering Studio発）</li>
+<li><b>パレットディザ：</b>量子化は最近色（RGBユークリッド）、拡散は輝度差のみ（単チャンネル）が実装コスパ最良。上位互換は per-channel ベクトル誤差＋OKLab距離（Dither it!のOKLabオプションが該当）</li>
+<li><b>全ツール共通の手抜き（＝差別化チャンス）：</b>輝度は BT.601 をガンマ済みsRGBに直接適用し<b>誰もリニア化していない</b>。リニアライト化→ディザ→戻す、を実装すれば理論上全競合より階調が正確になる</li>
+</ul>
+
+<h3>3-3. Bayer行列は再帰生成（ハードコード不要）</h3>
+<pre><code>// 2x2 = [[0,2],[3,1]]、以降 n→2n: M2n = [[4M, 4M+2],[4M+3, 4M+1]]
+// 正規化: t = (v + 0.5) / n²   → 0..1 の排他的しきい値
+// 適用:   out = step(t, L)      // 2値
+//         idx = round(clamp(L + (t-0.5)/levels, 0, 1) * (levels-1))  // パレット
+// GLSL閉形式（テクスチャ不要・ALUのみ）:
+float Bayer2(vec2 a){ a=floor(a); return fract(a.x/2. + a.y*a.y*.75); }
+#define Bayer4(a) (Bayer2(.5*(a))*.25 + Bayer2(a))
+#define Bayer8(a) (Bayer4(.5*(a))*.25 + Bayer2(a))</code></pre>
+
+<h3>3-4. CMYK分版ハーフトーン（「本物っぽさ」の決め手）</h3>
+<pre><code>// 1. 分版: K = min(C,M,Y) を先に取り (GCR)、CMY を (1-K) で正規化
+k = min(1-r, min(1-g, 1-b));  cmy = (1 - rgb - k) / (1 - k);
+// 2. スクリーン角度（モアレ最小化の伝統値）: C=15° M=75° Y=0° K=45°
+// 3. 各版を sqrt 面積則でドット化し、白から乗算合成:
+out = vec3(1);
+out.r *= 1 - dotC; out.g *= 1 - dotM; out.b *= 1 - dotY; out *= 1 - dotK;</code></pre>
+
+<h3>3-5. 書き出しの定石</h3>
+<ul>
+<li><b>PNG：</b>「作業解像度でディザ → <code>imageSmoothing=false</code> で元解像度へ最近傍拡大」（Dithering Studio方式）。プレビューと完全一致し、re-ditherコストゼロ</li>
+<li><b>SVG（ディザ系）：</b>同色の水平連続セルを1つの&lt;rect&gt;に統合（RLE）。背景色セルはスキップして背景&lt;rect&gt;1枚で表現</li>
+<li><b>SVG（ハーフトーン系）：</b>色毎に&lt;g fill&gt;グループ化＋座標2桁丸め（Shpigford方式）</li>
+<li><b>サイズ事前表示：</b>書き出しボタンに PNG 242KB / SVG 1.1MB のように blob サイズを事前計算して表示（Dithering Studio / Dither it! 共通の「信頼感」装置）</li>
+<li><b>動画：</b>canvas.captureStream + MediaRecorder（MP4→VP9→VP8フォールバック）、GIFは gifenc。まだ誰も WebCodecs を使っていない</li>
+</ul>
+
+<h3>3-6. パフォーマンスの定石</h3>
+<ul>
+<li>誤差拡散はシェーダ不可（逐次依存）→ <b>CPUでOK、ただし作業解像度を絞る</b>（Dithering Studio既定512px、Efectoも同思想）。Workerは512px程度ならコピーコストで逆に損（実装して無効化した形跡あり）</li>
+<li>ベクターハーフトーンの大量ドット描画は<b>50ms毎の時分割＋rAF継続</b>（xoihazard）か、1つの beginPath にバッチ</li>
+<li>シェーダAAは <code>smoothstep(r-aa, r+aa, dist)</code> with <code>aa = fwidth(dist)</code></li>
+</ul>
+
+<h2><span class="num">04</span>ギャップ分析：HALFTONE LAB v1 の弱点</h2>
+<table>
+<tr><th>領域</th><th>v1 の現状</th><th>競合水準とのギャップ</th></tr>
+<tr><td>ドット数学</td><td class="bad">半径が輝度に線形</td><td>sqrt面積補正＋セル中心サンプリングが標準。<b>中間調の再現性で明確に負けている</b></td></tr>
+<tr><td>誤差拡散</td><td class="bad">FS/Atkinsonの2種、serpentineなし</td><td>上位は12–16種＋serpentine既定ON＋強度スライダー＋カスタムカーネル</td></tr>
+<tr><td>Ordered</td><td class="bad">Bayer 8×8のみ</td><td>2/4/8/16(/32)＋Blue Noise</td></tr>
+<tr><td>パレット</td><td class="bad">インク/背景の2色のみ</td><td>Game Boy・PICO-8等20種前後のプリセット＋カスタム＋画像から抽出</td></tr>
+<tr><td>グリッド</td><td class="bad">正方形＋角度のみ</td><td>六角/放射/環/線グリッド、スワール、ノイズ変位、波リマップ</td></tr>
+<tr><td>比較UX</td><td class="bad">なし</td><td>ドラッグ分割ビュー＋ズーム/パン/フィットはほぼ全ツール標準</td></tr>
+<tr><td>書き出し</td><td class="bad">PNG倍率のみ（ジオメトリ再スケール方式）</td><td>SVG／元解像度NN拡大／サイズ事前表示／クリップボード</td></tr>
+<tr><td>状態共有</td><td class="bad">なし</td><td>設定のURL直列化・プリセット保存/トークン共有</td></tr>
+<tr><td>ASCII</td><td class="bad">固定4ランプ・fillText総当たり</td><td>ランプ編集＋インク密度自動ソート、文字セット10種超、グリフ品質</td></tr>
+<tr><td>CMYK</td><td class="bad">なし</td><td>halftone-fx/Heckel系の分版＋スクリーン角度が「印刷らしさ」の決め手</td></tr>
+<tr><td>遊び</td><td>ランダム1個</td><td>キュレート済みムードプールからのRemix、プリセットパック、サンプル複数</td></tr>
+</table>
+
+<h2><span class="num">05</span>v2 仕様提案（優先度つき）</h2>
+<p><span class="pill p0">P0 画質の底上げ</span>先に数学を直す — sqrt面積補正＋セル中心サンプリング／誤差拡散を10種以上（カーネルテーブル化すれば1種あたり数行）＋serpentine＋Error Strength／Bayer再帰生成2–16＋Blue Noise／リニアライト処理オプション（全競合が未実装の差別化点）</p>
+<p><span class="pill p0">P0 標準UX</span>ドラッグ分割比較／ズーム・パン・フィット／作業解像度スライダー＋元解像度NN書き出し／書き出しサイズ事前表示／SVG書き出し（RLE＋色グループ）</p>
+<p><span class="pill p1">P1 表現の幅</span>パレットシステム（プリセット15種＋カスタム＋画像抽出）／六角・放射グリッド＋スワール（xoihazardの数式移植）／CMYK分版モード（角度15/75/0/45）／ASCIIランプ編集＋密度自動ソート／波リマップ（のこぎり/三角/ポスタライズ）</p>
+<p><span class="pill p1">P1 状態の可搬性</span>設定のURL直列化（シェアリンク）／プリセット保存（localStorage）／キュレート済みRemixプール</p>
+<p><span class="pill p2">P2 その先</span>動画入出力（rAF＋MediaRecorder＋gifenc）／WebGLリアルタイム版（アニメーション強化・CRTスタック）／点描（Lloyd緩和）／メタボール</p>
+
+<footer>
+調査ソース：<a href="https://ditheringstudio.com/en/">Dithering Studio</a>（＋<a href="https://github.com/Oslonline/dithering-studio">GitHub</a>）／<a href="https://ditherit.com/">Dither it!</a>（＋<a href="https://github.com/alexharris/ditherit-v3">v3</a>・<a href="https://github.com/alexharris/ditherit-v2">v2</a>）／<a href="https://www.ditther.com/">Ditther</a>（app.ditther.com v1.4 DOM実測）／<a href="https://halftonemaker.com/">Halftone Maker</a>（<a href="https://blog.halftonemaker.com/changelog/">changelog</a>解析）／<a href="https://halftone-fx.com/">Halftone Dithering FX</a>／<a href="https://studio-ity.com/halftone/">STUDIO·ITY</a>／<a href="https://halftone.xoihazard.com/">Vector Halftone Maker</a>（バンドル逆解析）／<a href="https://github.com/Shpigford/dither">Shpigford/dither</a>（ソース精読）／<a href="https://efecto.app/fx">Efecto</a>＋<a href="https://tympanus.net/codrops/2026/01/04/efecto-building-real-time-ascii-and-dithering-effects-with-webgl-shaders/">Codrops記事</a>／<a href="https://blog.maximeheckel.com/posts/shades-of-halftone/">Shades of Halftone</a>／<a href="https://web.archive.org/web/20221006100755/https://weber.itn.liu.se/~stegu/webglshadertutorial/shadertutorial.html">Stegu WebGL halftone tutorial</a>／<a href="https://tympanus.net/codrops/2025/07/30/interactive-webgl-backgrounds-a-quick-guide-to-bayer-dithering/">Bayer dithering guide</a>／<a href="https://github.com/allen-garvey/dithermark">dithermark</a>。2026-07-30 実施。
+</footer>
+</div>
+</body>
+</html>

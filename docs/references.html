@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ハーフトーン系デザインツール リファレンスボード</title>
+<style>
+  :root{
+    --bg:#0a0a0b; --panel:#141417; --panel2:#1c1c21; --line:#2a2a31;
+    --ink:#f2f2f4; --sub:#9a9aa6; --accent:#e9e4d6; --dot:#f7f7f2;
+    --a:#7cc7ff; --b:#ffd166; --c:#c792ea; --d:#5ee0a8; --e:#ff8fa3; --f:#89e0ff; --g:#ffb27a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+    line-height:1.6;
+    background-image:radial-gradient(var(--panel2) 1px, transparent 1px);
+    background-size:14px 14px;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:56px 24px 96px}
+  header{margin-bottom:40px}
+  .eyebrow{letter-spacing:.28em;font-size:11px;color:var(--sub);text-transform:uppercase;margin:0 0 14px}
+  h1{font-size:clamp(28px,4vw,46px);line-height:1.15;margin:0 0 16px;font-weight:800;letter-spacing:-.01em}
+  h1 .halftone{
+    background:radial-gradient(circle at 30% 30%, #fff 0 40%, #888 41% 60%, transparent 61%),#000;
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .lead{color:var(--sub);max-width:720px;font-size:15px}
+  .meta{margin-top:14px;font-size:12.5px;color:var(--sub)}
+  .filters{display:flex;flex-wrap:wrap;gap:8px;margin:32px 0 8px}
+  .filters button{
+    background:var(--panel);border:1px solid var(--line);color:var(--sub);
+    padding:7px 14px;border-radius:999px;font-size:12.5px;cursor:pointer;transition:.15s;
+  }
+  .filters button:hover{color:var(--ink);border-color:#3a3a44}
+  .filters button.active{background:var(--ink);color:#0a0a0b;border-color:var(--ink);font-weight:600}
+  .section{margin-top:40px}
+  .section h2{font-size:15px;letter-spacing:.02em;margin:0 0 4px;display:flex;align-items:center;gap:10px}
+  .section h2 .tag{width:10px;height:10px;border-radius:3px;display:inline-block}
+  .section .desc{color:var(--sub);font-size:13px;margin:0 0 18px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+  .card{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 18px 16px;
+    text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px;transition:.16s;position:relative;overflow:hidden;
+  }
+  .card:hover{transform:translateY(-3px);border-color:#3d3d47;background:var(--panel2)}
+  .card .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .card h3{font-size:15.5px;margin:0;font-weight:700;letter-spacing:-.01em}
+  .card .host{font-size:11px;color:var(--sub);white-space:nowrap}
+  .card p{margin:0;font-size:13px;color:var(--sub);line-height:1.55}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+  .chip{font-size:10.5px;color:var(--sub);border:1px solid var(--line);border-radius:6px;padding:2px 7px}
+  .star{position:absolute;top:14px;right:14px;font-size:11px;color:#0a0a0b;background:var(--b);border-radius:6px;padding:2px 7px;font-weight:700}
+  footer{margin-top:56px;padding-top:24px;border-top:1px solid var(--line);color:var(--sub);font-size:12.5px}
+  .hidden{display:none!important}
+  .kbd{font-family:ui-monospace,monospace;background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:11.5px;color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Reference Board</p>
+    <h1><span class="halftone">ハーフトーン系</span>デザインツール<br>リファレンス集</h1>
+    <p class="lead">「入力バー／スライダーでパラメータをいじって、色々なバリエーションを生成 → 書き出し」というHTMLデザインツールを作るための参考。<strong style="color:var(--ink)">実在するツール・作例・実装リファレンス</strong>をカテゴリ別にまとめました。<span class="star" style="position:static;display:inline-block;vertical-align:middle">★</span> は特にゴールに近い＝先に触るべきもの。</p>
+    <p class="meta">全 30 件 ／ 2026-07-30 時点 ／ カードをクリックで各サイトへ</p>
+  </header>
+
+  <div class="filters" id="filters">
+    <button class="active" data-f="all">すべて</button>
+    <button data-f="allinone">★ オールインワン</button>
+    <button data-f="halftone">ハーフトーン特化</button>
+    <button data-f="dither">ディザリング特化</button>
+    <button data-f="ascii">ASCII / ドット系</button>
+    <button data-f="tech">実装リファレンス</button>
+    <button data-f="param">パラメトリックUIの思想</button>
+    <button data-f="inspo">ビジュアル作例</button>
+  </div>
+
+  <!-- A -->
+  <section class="section" data-cat="allinone">
+    <h2><span class="tag" style="background:var(--a)"></span>A. オールインワン（ゴールに最も近い・操作感の手本）</h2>
+    <p class="desc">複数エフェクト × パラメータ調整 × 書き出しを1つのUIに載せている。まさに作りたい形。ここのUX（コントロールの並べ方・即プレビュー・比較ビュー）を最優先で観察したい。</p>
+    <div class="grid">
+      <a class="card" href="https://www.ditther.com/" target="_blank" rel="noopener">
+        <span class="star">★</span>
+        <div class="top"><h3>Ditther</h3><span class="host">ditther.com</span></div>
+        <p>dither / ASCII / halftone / LEGO / dot / voxel など8エフェクトを1ツールに。画像・動画・URL対応、各エフェクトごとにコントロール、〜4K書き出し。理想形のひとつ。</p>
+        <div class="chips"><span class="chip">8種エフェクト</span><span class="chip">動画対応</span><span class="chip">4K書き出し</span></div>
+      </a>
+      <a class="card" href="https://halftone-fx.com/" target="_blank" rel="noopener">
+        <span class="star">★</span>
+        <div class="top"><h3>Halftone Dithering FX</h3><span class="host">halftone-fx.com</span></div>
+        <p>Floyd–Steinberg / Jarvis / Stucki / Burkes + ordered dither。グリッド・明度・コントラスト・ガンマ・スムージング調整、split-viewで即比較。PNG/SVG/WebM書き出し、ブラウザ内処理。</p>
+        <div class="chips"><span class="chip">複数アルゴリズム</span><span class="chip">split比較</span><span class="chip">PNG/SVG/WebM</span></div>
+      </a>
+      <a class="card" href="https://www.magicpattern.design/tools/dither-generator" target="_blank" rel="noopener">
+        <span class="star">★</span>
+        <div class="top"><h3>MagicPattern · Dither</h3><span class="host">magicpattern.design</span></div>
+        <p>レトロなdither/halftone/pixel。コントロールUIの見せ方・プリセットの作りが洗練されていて、UIデザインの参考になる。</p>
+        <div class="chips"><span class="chip">UIが綺麗</span><span class="chip">プリセット</span></div>
+      </a>
+      <a class="card" href="https://www.magicpattern.design/tools/halftone-generator" target="_blank" rel="noopener">
+        <div class="top"><h3>MagicPattern · Halftone</h3><span class="host">magicpattern.design</span></div>
+        <p>コミック／新聞印刷風のハーフトーン。上のDitherと同系統UIで、ツール群としての設計思想が見える。</p>
+        <div class="chips"><span class="chip">comic/newsprint</span></div>
+      </a>
+    </div>
+  </section>
+
+  <!-- B -->
+  <section class="section" data-cat="halftone">
+    <h2><span class="tag" style="background:var(--b)"></span>B. ハーフトーン特化</h2>
+    <p class="desc">動画の演出（網点）と同系統。ドット形状・角度・密度・スレッショルドなどパラメータの粒度を比較したい。</p>
+    <div class="grid">
+      <a class="card" href="https://studio-ity.com/halftone/" target="_blank" rel="noopener">
+        <div class="top"><h3>STUDIO·ITY Halftone</h3><span class="host">studio-ity.com</span></div>
+        <p>画像＆動画対応の無料ハーフトーンツール。動くハーフトーン（動画）を扱える点が今回の題材にドンピシャ。</p>
+        <div class="chips"><span class="chip">動画対応</span></div>
+      </a>
+      <a class="card" href="https://halftone.xoihazard.com/" target="_blank" rel="noopener">
+        <div class="top"><h3>Vector Halftone Maker</h3><span class="host">halftone.xoihazard.com</span></div>
+        <p>インタラクティブにPNG/SVGのハーフトーンパターンを生成。ベクター書き出しできるのが強み。</p>
+        <div class="chips"><span class="chip">PNG/SVG</span><span class="chip">ベクター</span></div>
+      </a>
+      <a class="card" href="https://halftonemaker.com/" target="_blank" rel="noopener">
+        <div class="top"><h3>Halftone Maker</h3><span class="host">halftonemaker.com</span></div>
+        <p>ハーフトーン＋スティップリング（点描）に対応したプロ向けジェネレータ。表現の幅の参考に。</p>
+        <div class="chips"><span class="chip">stippling</span></div>
+      </a>
+      <a class="card" href="https://www.atomm.com/creativetools/halftone" target="_blank" rel="noopener">
+        <div class="top"><h3>Atomm · Halftone</h3><span class="host">atomm.com</span></div>
+        <p>画像をハーフトーンパターンに変換。シンプルな操作フローの参考。</p>
+        <div class="chips"><span class="chip">シンプル</span></div>
+      </a>
+      <a class="card" href="https://www.grayscaleimage.org/halftone-effect" target="_blank" rel="noopener">
+        <div class="top"><h3>Grayscale Image · Halftone</h3><span class="host">grayscaleimage.org</span></div>
+        <p>グレースケール前提のハーフトーン変換。白黒表現に絞った設計が今回のトーンに近い。</p>
+        <div class="chips"><span class="chip">白黒</span></div>
+      </a>
+    </div>
+  </section>
+
+  <!-- C -->
+  <section class="section" data-cat="dither">
+    <h2><span class="tag" style="background:var(--c)"></span>C. ディザリング特化</h2>
+    <p class="desc">1-bit / レトロ表現の定番。アルゴリズム選択・パレット・解像度といったパラメータ設計の基準として。</p>
+    <div class="grid">
+      <a class="card" href="https://ditherit.com/" target="_blank" rel="noopener">
+        <span class="star">★</span>
+        <div class="top"><h3>Dither it!</h3><span class="host">ditherit.com</span></div>
+        <p>ディザツールの定番。ミニマルなUIで「アップロード→調整→ダウンロード」の基本フローが綺麗に完結する好例。</p>
+        <div class="chips"><span class="chip">定番</span><span class="chip">ミニマルUI</span></div>
+      </a>
+      <a class="card" href="https://ditheringstudio.com/en/" target="_blank" rel="noopener">
+        <div class="top"><h3>Dithering Studio</h3><span class="host">ditheringstudio.com</span></div>
+        <p>画像＆動画対応、アップロード不要（ブラウザ内処理）。プライバシー配慮型の実装参考。</p>
+        <div class="chips"><span class="chip">動画</span><span class="chip">no-upload</span></div>
+      </a>
+      <a class="card" href="https://steinberg-image.vercel.app/" target="_blank" rel="noopener">
+        <div class="top"><h3>Steinberg Image</h3><span class="host">steinberg-image.vercel.app</span></div>
+        <p>Floyd-Steinberg / Bayer / Atkinson など複数手法を切替。アルゴリズム比較の勉強に最適。</p>
+        <div class="chips"><span class="chip">複数手法</span></div>
+      </a>
+      <a class="card" href="https://imag-r.com/toolset/floydsteinberg" target="_blank" rel="noopener">
+        <div class="top"><h3>ImagR · Floyd–Steinberg</h3><span class="host">imag-r.com</span></div>
+        <p>レーザー刻印向けの実用ディザ。用途特化でパラメータが具体的、実装の指針になる。</p>
+        <div class="chips"><span class="chip">実用特化</span></div>
+      </a>
+      <a class="card" href="https://github.com/Shpigford/dither" target="_blank" rel="noopener">
+        <div class="top"><h3>Shpigford / dither</h3><span class="host">github.com</span></div>
+        <p>Web＆Illustrator用のベクターディザツール（OSS）。コードが読めるので実装の直接の下敷きに。</p>
+        <div class="chips"><span class="chip">OSS</span><span class="chip">ベクター</span></div>
+      </a>
+    </div>
+  </section>
+
+  <!-- D -->
+  <section class="section" data-cat="ascii">
+    <h2><span class="tag" style="background:var(--d)"></span>D. ASCII / ドット系</h2>
+    <p class="desc">文字・記号で画像を再構成する系統。動画の"崩れていく"演出のバリエーション拡張として。</p>
+    <div class="grid">
+      <a class="card" href="https://www.ascii-magic.com/" target="_blank" rel="noopener">
+        <div class="top"><h3>ASCII Magic</h3><span class="host">ascii-magic.com</span></div>
+        <p>画像・動画をASCIIに変換。dither系スタイルも持ち、複数表現を横断できるツール設計が参考になる。</p>
+        <div class="chips"><span class="chip">動画対応</span><span class="chip">dither併設</span></div>
+      </a>
+      <a class="card" href="https://folge.me/tools/image-to-ascii" target="_blank" rel="noopener">
+        <div class="top"><h3>Folge · Image to ASCII</h3><span class="host">folge.me</span></div>
+        <p>画像→ASCIIのシンプル変換。文字セットや密度の指定UIが参考に。</p>
+        <div class="chips"><span class="chip">シンプル</span></div>
+      </a>
+      <a class="card" href="https://ascii-art-generator.net/" target="_blank" rel="noopener">
+        <div class="top"><h3>ASCII Art Generator</h3><span class="host">ascii-art-generator.net</span></div>
+        <p>定番の画像→ASCII変換。無料で手早く挙動を確認できる。</p>
+        <div class="chips"><span class="chip">定番</span></div>
+      </a>
+    </div>
+  </section>
+
+  <!-- E -->
+  <section class="section" data-cat="tech">
+    <h2><span class="tag" style="background:var(--e)"></span>E. 実装リファレンス（作り方）</h2>
+    <p class="desc">実際にこの手のエフェクトをWebGL/シェーダ/p5.jsで作る技術記事とコード。動画の「CC Ball Action風」をブラウザで再現する土台。</p>
+    <div class="grid">
+      <a class="card" href="https://tympanus.net/codrops/2026/01/04/efecto-building-real-time-ascii-and-dithering-effects-with-webgl-shaders/" target="_blank" rel="noopener">
+        <span class="star">★</span>
+        <div class="top"><h3>Codrops: Efecto</h3><span class="host">tympanus.net</span></div>
+        <p>WebGLシェーダでリアルタイムASCII＆ディザを作るチュートリアル。まさに「作りたいツール」の実装解説。最有力の教科書。</p>
+        <div class="chips"><span class="chip">WebGL</span><span class="chip">リアルタイム</span><span class="chip">チュートリアル</span></div>
+      </a>
+      <a class="card" href="https://blog.maximeheckel.com/posts/shades-of-halftone/" target="_blank" rel="noopener">
+        <span class="star">★</span>
+        <div class="top"><h3>Shades of Halftone</h3><span class="host">blog.maximeheckel.com</span></div>
+        <p>シェーダでハーフトーンを作る詳細解説（Maxime Heckel）。ドット化の数式が丁寧で、パラメータ設計に直結。</p>
+        <div class="chips"><span class="chip">シェーダ</span><span class="chip">数式解説</span></div>
+      </a>
+      <a class="card" href="https://weber.itn.liu.se/~stegu/webglshadertutorial/shadertutorial.html" target="_blank" rel="noopener">
+        <div class="top"><h3>WebGL Halftone Shader Tutorial</h3><span class="host">weber.itn.liu.se</span></div>
+        <p>ハーフトーンシェーダの基礎チュートリアル（Stefan Gustavson）。原理から理解したい時に。</p>
+        <div class="chips"><span class="chip">基礎</span></div>
+      </a>
+      <a class="card" href="https://github.com/aferriss/p5jsShaderExamples/" target="_blank" rel="noopener">
+        <div class="top"><h3>p5.js Shader Examples</h3><span class="host">github.com</span></div>
+        <p>p5.js＋GLSLのコメント多めシェーダ集。p5で試作するなら最初に見るリポジトリ。</p>
+        <div class="chips"><span class="chip">p5.js</span><span class="chip">OSS</span></div>
+      </a>
+      <a class="card" href="https://editor.p5js.org/sitickner/sketches/B08_DMnnp" target="_blank" rel="noopener">
+        <div class="top"><h3>Halftone Display (Animated, WebGL)</h3><span class="host">editor.p5js.org</span></div>
+        <p>アニメーションするハーフトーン表示のp5スケッチ。ブラウザ上でコードを触りながら確認できる。</p>
+        <div class="chips"><span class="chip">動く作例</span><span class="chip">編集可</span></div>
+      </a>
+      <a class="card" href="https://antiboredom.github.io/p5.riso/" target="_blank" rel="noopener">
+        <div class="top"><h3>p5.riso</h3><span class="host">antiboredom.github.io</span></div>
+        <p>リソグラフ風の版ずれ・網点表現をp5で。白黒＋レトロ印刷トーンの拡張ネタに。</p>
+        <div class="chips"><span class="chip">risograph</span></div>
+      </a>
+    </div>
+  </section>
+
+  <!-- F -->
+  <section class="section" data-cat="param">
+    <h2><span class="tag" style="background:var(--f)"></span>F. パラメトリック／ジェネレーティブUIの思想</h2>
+    <p class="desc">「パラメータをいじって無数のバリエーションを生む」という体験設計そのものの参考。エフェクトに限らずUX発想の引き出しとして。</p>
+    <div class="grid">
+      <a class="card" href="https://components.ai/" target="_blank" rel="noopener">
+        <div class="top"><h3>Components AI</h3><span class="host">components.ai</span></div>
+        <p>ジェネレーティブなデザインシステムを探索するツール。パラメータ空間からデザインを"引く"という発想の代表例。</p>
+        <div class="chips"><span class="chip">generative system</span></div>
+      </a>
+      <a class="card" href="https://github.com/jasonwebb/SuperformulaSVG-for-web" target="_blank" rel="noopener">
+        <div class="top"><h3>SuperformulaSVG for web</h3><span class="host">github.com</span></div>
+        <p>スライダー操作でジェネラティブ線画を生成し、SVG/ラスターで書き出すWebアプリ（OSS）。UI＋書き出し設計の実例。</p>
+        <div class="chips"><span class="chip">スライダー</span><span class="chip">SVG書き出し</span><span class="chip">OSS</span></div>
+      </a>
+    </div>
+  </section>
+
+  <!-- G -->
+  <section class="section" data-cat="inspo">
+    <h2><span class="tag" style="background:var(--g)"></span>G. ビジュアル作例・インスピレーション</h2>
+    <p class="desc">完成イメージ／トーン合わせ用。ツールで"何を作れると嬉しいか"のゴール像を集める。</p>
+    <div class="grid">
+      <a class="card" href="https://dribbble.com/tags/halftone" target="_blank" rel="noopener">
+        <div class="top"><h3>Dribbble · Halftone</h3><span class="host">dribbble.com</span></div>
+        <p>ハーフトーン作品のタグ一覧。表現バリエーションの引き出しづくりに。</p>
+        <div class="chips"><span class="chip">作品ギャラリー</span></div>
+      </a>
+      <a class="card" href="https://dribbble.com/tags/halftone-effect" target="_blank" rel="noopener">
+        <div class="top"><h3>Dribbble · Halftone Effect</h3><span class="host">dribbble.com</span></div>
+        <p>「halftone effect」タグ。動画の演出に近いモーション作例も混じる。</p>
+        <div class="chips"><span class="chip">モーション有</span></div>
+      </a>
+      <a class="card" href="https://www.awwwards.com/sites/type-dither" target="_blank" rel="noopener">
+        <div class="top"><h3>Awwwards · Type Dither</h3><span class="host">awwwards.com</span></div>
+        <p>ディザ＋タイポのインタラクティブサイト受賞例。Webでの見せ方・操作感の高水準サンプル。</p>
+        <div class="chips"><span class="chip">受賞サイト</span><span class="chip">interactive</span></div>
+      </a>
+      <a class="card" href="https://www.awwwards.com/inspiration/video-with-halftone-distortion-shaders" target="_blank" rel="noopener">
+        <div class="top"><h3>Awwwards · Halftone & Distortion Shaders</h3><span class="host">awwwards.com</span></div>
+        <p>ハーフトーン＋ディストーションのシェーダ映像インスピ。動画の「網点が崩れる」演出の近縁。</p>
+        <div class="chips"><span class="chip">shader映像</span></div>
+      </a>
+    </div>
+  </section>
+
+  <footer>
+    集めた30件はすべて実在する現行ツール／記事／作例です（2026-07-30 時点）。<br>
+    次に進めるなら：① ★印を実際に触って「これは載せたい／要らない」を仕分け → ② 対応エフェクトとパラメータの一覧表を作成 → ③ MVP（例：画像アップ→ハーフトーン1種→パラメータ3つ→PNG書き出し）から着手、が最短ルートです。
+  </footer>
+</div>
+
+<script>
+  const filters=document.getElementById('filters');
+  const sections=[...document.querySelectorAll('.section')];
+  filters.addEventListener('click',e=>{
+    const btn=e.target.closest('button'); if(!btn)return;
+    [...filters.children].forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const f=btn.dataset.f;
+    sections.forEach(s=>{
+      s.classList.toggle('hidden', f!=='all' && s.dataset.cat!==f);
+    });
+  });
+</script>
+</body>
+</html>
